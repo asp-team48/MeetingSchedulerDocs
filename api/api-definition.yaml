@@ -1,0 +1,180 @@
+# Visualise this Swagger document on https://editor.swagger.io/ by copy/pasting this.
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Meeting Scheduler API
+  description: API for scheduling meetings based on user availabilities and time constraints.
+servers:
+  - url: http://api.example.com/v1
+paths:
+  /health:
+    get:
+      summary: "Check API health"
+      responses:
+        '200':
+          description: OK
+        '503':
+          description: Service Unavailable
+  /get-best-times:
+    post:
+      summary: "Get working meeting times based on parameters"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetBestTimes'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingTimes'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+  /create-meeting:
+    post:
+      summary: "Create a new meeting"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewMeeting'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingInfo'
+        '400':
+          description: Bad Request
+        '500':
+          description: Internal Server Error
+  /meetings/{meetingId}:
+    get:
+      summary: "Retrieve information about a specific meeting"
+      parameters:
+        - in: path
+          name: meetingId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingInfo'
+        '404':
+          description: Meeting Not Found
+        '500':
+          description: Internal Server Error
+    put:
+      summary: "Update a specific meeting for the same Provider"
+      parameters:
+        - in: path
+          name: meetingId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeetingUpdate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingInfo'
+        '400':
+          description: Bad Request
+        '404':
+          description: Meeting Not Found
+        '500':
+          description: Internal Server Error
+components:
+  schemas:
+    GetBestTimes:
+      type: object
+      properties:
+        fromDateTime:
+          type: string
+          format: date-time
+        toDateTime:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        userBestTimes:
+          type: array
+          items:
+            type: object
+            properties:
+              fromDateTime:
+                type: string
+                format: date-time
+              toDateTime:
+                type: string
+                format: date-time
+    MeetingTimes:
+      type: object
+      properties:
+        times:
+          type: array
+          items:
+            type: string
+            format: date-time
+    NewMeeting:
+      type: object
+      properties:
+        dateTime:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        userEmails:
+          type: array
+          items:
+            type: string
+        provider:
+          type: string
+          enum:
+            - Teams
+            - Meets
+            - Zoom
+    MeetingInfo:
+      type: object
+      properties:
+        meetingId:
+          type: string
+        creationDateTime:
+          type: string
+          format: date-time
+        userEmails:
+          type: array
+          items:
+            type: string
+        provider:
+          type: string
+          enum:
+            - Teams
+            - Meets
+            - Zoom
+    MeetingUpdate:
+      type: object
+      properties:
+        newDateTime:
+          type: string
+          format: date-time
+        newDuration:
+          type: integer
